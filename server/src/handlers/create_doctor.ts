@@ -1,11 +1,13 @@
 
+import { db } from '../db';
+import { doctorsTable } from '../db/schema';
 import { type CreateDoctorInput, type Doctor } from '../schema';
 
 export const createDoctor = async (input: CreateDoctorInput): Promise<Doctor> => {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is creating a new doctor profile and persisting it in the database.
-    return Promise.resolve({
-        id: 0, // Placeholder ID
+  try {
+    // Insert doctor record
+    const result = await db.insert(doctorsTable)
+      .values({
         company_id: input.company_id,
         department_id: input.department_id,
         first_name: input.first_name,
@@ -13,8 +15,15 @@ export const createDoctor = async (input: CreateDoctorInput): Promise<Doctor> =>
         email: input.email,
         phone: input.phone,
         specialization: input.specialization,
-        license_number: input.license_number,
-        is_active: true,
-        created_at: new Date()
-    } as Doctor);
-}
+        license_number: input.license_number
+      })
+      .returning()
+      .execute();
+
+    const doctor = result[0];
+    return doctor;
+  } catch (error) {
+    console.error('Doctor creation failed:', error);
+    throw error;
+  }
+};
